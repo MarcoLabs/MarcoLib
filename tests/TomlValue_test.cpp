@@ -125,7 +125,7 @@ TEST(TomlValueAccessors, AsStringReturnsErrorForNonString)
 {
 	Marco::TomlValue value(1);
 
-	ASSERT_TRUE(value.AsString().has_value());
+	ASSERT_FALSE(value.AsString().has_value());
 	EXPECT_EQ(value.AsString().error().errorType, Marco::TomlErrorType::WrongType);
 }
 
