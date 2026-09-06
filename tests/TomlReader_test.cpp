@@ -256,6 +256,54 @@ TEST(TomlReaderNumbers, FailsOnMalformedFloatWithTwoDots)
 	EXPECT_FALSE(reader.IsValid());
 }
 
+TEST(TomlReaderNumbers, FailsOnLeadingDecimalPoint)
+{
+	Marco::TomlReader reader{};
+	reader.Parse("key = .5");
+	
+	EXPECT_FALSE(reader.IsValid());
+}
+
+TEST(TomlReaderNumbers, FailsOnTrailingDecimalPoint)
+{
+	Marco::TomlReader reader{};
+	reader.Parse("key = 5.");
+	
+	EXPECT_FALSE(reader.IsValid());
+}
+
+TEST(TomlReaderNumbers, FailsOnDuplicateExponent)
+{
+	Marco::TomlReader reader{};
+	reader.Parse("key = 1e2e3");
+
+	EXPECT_FALSE(reader.IsValid());
+}
+
+TEST(TomlReaderNumbers, FailsOnLeadingUnderscoreInInteger)
+{
+	Marco::TomlReader reader{};
+	reader.Parse("key = _123");
+
+	EXPECT_FALSE(reader.IsValid());
+}
+
+TEST(TomlReaderNumbers, FailsOnTrailingUnderscoreInInteger)
+{
+	Marco::TomlReader reader{};
+	reader.Parse("key = 123_");
+
+	EXPECT_FALSE(reader.IsValid());
+}
+
+TEST(TomlReaderNumbers, FailsOnConsecutiveUnderscoresInInteger)
+{
+	Marco::TomlReader reader{};
+	reader.Parse("key = 1__2");
+
+	EXPECT_FALSE(reader.IsValid());
+}
+
 TEST(TomlReaderBooleans, ParsesTrueValue)
 {
 	Marco::TomlReader reader{};
@@ -370,6 +418,14 @@ TEST(TomlReaderStrings, FailsOnUnclosedString)
 	EXPECT_FALSE(reader.IsValid());
 }
 
+TEST(TomlReaderStrings, FailsOnInvalidEscapeSequenceInBasicString)
+{
+	Marco::TomlReader reader{};
+	reader.Parse(R"(key = "invalid\z escape")");
+
+	EXPECT_FALSE(reader.IsValid());
+}
+
 TEST(TomlReaderArrays, ParsesEmptyArray)
 {
 	Marco::TomlReader reader{};
@@ -468,6 +524,15 @@ TEST(TomlReaderInlineTables, FailsOnTrailingCommaInInlineTables)
 
 	EXPECT_FALSE(reader.IsValid());
 }
+
+TEST(TomlReaderInlineTables, FailsOnEmptyInlineTableWithComma)
+{
+	Marco::TomlReader reader{};
+	reader.Parse(R"(key = {,})");
+
+	EXPECT_FALSE(reader.IsValid());
+}
+
 
 TEST(TomlReaderTables, ParsesKeyUnderTableHeader)
 {
