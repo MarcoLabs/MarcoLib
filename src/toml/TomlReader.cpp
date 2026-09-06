@@ -171,7 +171,9 @@ Marco::TomlError Marco::TomlReader::HandleTables(Marco::TomlValue& rootTomlValue
 		return TomlError{TomlErrorType::InvalidFormat, index};
 	}
 
-	if (currTomlValue->AsObject().value().get().contains(key))
+	auto currAsObject = currTomlValue->AsObject();
+	
+	if (currAsObject.has_value() && currAsObject.value().get().contains(key))
 	{
 		return TomlError{TomlErrorType::InvalidFormat, index};
 	}
@@ -200,25 +202,32 @@ Marco::TomlError Marco::TomlReader::HandleInlineTables(Marco::TomlValue* currTom
 {
 	enum class State
 	{
-		ExpectKey,
+		ExpectKeyOrEnd, // initial state only - {} is valid
+		ExpectKey, // reached after a comma - {,} or trailing comma is invalid here
 		ExpectCommaOrEnd
 	};
 	
 	index++;
 	MoveIndexUntilNotSpace(tomlString, index);
 	
-	State state = State::ExpectKey;
+	State state = State::ExpectKeyOrEnd;
 	
 	while (index < tomlString.length())
 	{
 		switch (state)
 		{
+			case State::ExpectKeyOrEnd:
 			case State::ExpectKey:
 			{
 				if (tomlString[index] == '}')
 				{
-					index++;
-					return TomlError{TomlErrorType::NoError, index};
+					if (state == State::ExpectKeyOrEnd)
+					{
+						index++;
+						
+						return TomlError{TomlErrorType::NoError, index};
+					}
+					return TomlError{TomlErrorType::InvalidFormat, index};
 				}
 				
 				char c = tomlString[index];
@@ -485,6 +494,8 @@ Marco::TomlError Marco::TomlReader::HandleNumber(Marco::TomlValue* currTomlValue
 	std::string value{};
 	bool isFloat       = false;
 	bool hasBasePrefix = false;
+	bool hasDecimalPoint = false;
+	bool hasExponent     = false;
 
 	if (tomlString[index] == '+' || tomlString[index] == '-')
 	{
@@ -521,9 +532,23 @@ Marco::TomlError Marco::TomlReader::HandleNumber(Marco::TomlValue* currTomlValue
 
 		if (!hasBasePrefix && (c == '.' || c == 'e' || c == 'E'))
 		{
-			if (isFloat)
+			if (c == '.')
 			{
-				return TomlError{TomlErrorType::InvalidNumberFormat, index};
+				if (hasDecimalPoint || hasExponent)
+				{
+					return TomlError{TomlErrorType::InvalidNumberFormat, index};
+				}
+
+				hasDecimalPoint = true;
+			}
+			else
+			{
+				if (hasExponent)
+				{
+					return TomlError{TomlErrorType::InvalidNumberFormat, index};
+				}
+
+				hasExponent = true;
 			}
 
 			isFloat = true;
@@ -609,7 +634,7 @@ Marco::TomlError Marco::TomlReader::HandleString(Marco::TomlValue* currTomlValue
 	}
 	else
 	{
-		for (; index < tomlString.length(); index++)
+		while (index < tomlString.length())
 		{
 			char c = tomlString[index];
 
@@ -639,6 +664,7 @@ Marco::TomlError Marco::TomlReader::HandleString(Marco::TomlValue* currTomlValue
 			}
 
 			value.push_back(c);
+			index++;
 		}
 	}
 
@@ -737,6 +763,8 @@ Marco::TomlError Marco::TomlReader::HandleArray(Marco::TomlValue* currTomlValue,
 {
 	index++;
 
+	*currTomlValue = TomlArray{};
+
 	bool isExpectingValue = true;
 
 	while (index < tomlString.length())
@@ -796,12 +824,14 @@ std::expected<std::string, Marco::TomlError> Marco::TomlReader::HandleStringKey(
 
 	std::string key{};
 
-	for (; index < tomlString.length(); index++)
+	while (index < tomlString.length())
 	{
 		char c = tomlString[index];
 
 		if (c == '\"')
 		{
+			index++; // skip the "
+			
 			break;
 		}
 		
@@ -818,6 +848,7 @@ std::expected<std::string, Marco::TomlError> Marco::TomlReader::HandleStringKey(
 		}
 		
 		key.push_back(c);
+		index++;
 	}
 
 	for (; index < tomlString.length(); index++)
@@ -855,6 +886,7 @@ std::expected<std::string, Marco::TomlError> Marco::TomlReader::HandleStringLite
 
 		if (c == '\'')
 		{
+			index++; // skip the '
 			break;
 		}
 
@@ -997,7 +1029,7 @@ std::expected<long, Marco::TomlError> Marco::TomlReader::ParseTomlInt(std::strin
 
 	if (s.empty())
 	{
-		return std::unexpected(TomlError{TomlErrorType::InvalidFormat, 0});
+		return std::unexpected(TomlError{TomlErrorType::InvalidNumberFormat, 0});
 	}
 
 	long value        = 0;
