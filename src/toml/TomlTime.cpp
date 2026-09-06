@@ -58,7 +58,7 @@ Marco::TomlError Marco::TomlTime::FromString(const std::string& dateString)
 
 	if (dateString.length() < 8) // Doesnt have the seconds in HH:MM:SS
 	{
-		if (! this->IsWIthinBoundry())
+		if (! this->IsWithinBoundry())
 		{
 			return TomlError{TomlErrorType::InvalidDateFormat, i};
 		}
@@ -90,7 +90,7 @@ Marco::TomlError Marco::TomlTime::FromString(const std::string& dateString)
 
 	if (dateString.length() == 8)
 	{
-		if (! this->IsWIthinBoundry())
+		if (! this->IsWithinBoundry())
 		{
 			return TomlError{TomlErrorType::InvalidDateFormat, i};
 		}
@@ -125,7 +125,7 @@ Marco::TomlError Marco::TomlTime::FromString(const std::string& dateString)
 
 	this->millisecond = result.value();
 
-	if (! this->IsWIthinBoundry())
+	if (! this->IsWithinBoundry())
 	{
 		return TomlError{TomlErrorType::InvalidDateFormat, i};
 	}
@@ -178,7 +178,7 @@ std::string Marco::TomlTime::AsString()
 	return dateString;
 }
 
-bool Marco::TomlTime::IsWIthinBoundry()
+bool Marco::TomlTime::IsWithinBoundry()
 {
 	if (this->hour > 24)
 	{

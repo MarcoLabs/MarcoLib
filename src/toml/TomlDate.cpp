@@ -73,7 +73,7 @@ Marco::TomlError Marco::TomlDate::FromString(const std::string& dateString)
 	
 	if (dateString.length() == 10) // is exactly YYYY-MM-DD
 	{
-		if (! this->IsWIthinBoundry())
+		if (! this->IsWithinBoundry())
 		{
 			return TomlError{TomlErrorType::InvalidDateFormat, i};
 		}
@@ -111,7 +111,7 @@ Marco::TomlError Marco::TomlDate::FromString(const std::string& dateString)
 		
 		this->offsetTimeEnd.FromString(s);
 
-		if (! this->IsWIthinBoundry())
+		if (! this->IsWithinBoundry())
 		{
 			return TomlError{TomlErrorType::InvalidDateFormat, i};
 		}
@@ -138,7 +138,7 @@ Marco::TomlError Marco::TomlDate::FromString(const std::string& dateString)
 
 	error = this->offsetTimeEnd.FromString(s);
 
-	if (! this->IsWIthinBoundry())
+	if (! this->IsWithinBoundry())
 	{
 		return TomlError{TomlErrorType::InvalidDateFormat, i};
 	}
@@ -200,7 +200,7 @@ std::string Marco::TomlDate::AsString()
 	return dateString;
 }
 
-bool Marco::TomlDate::IsWIthinBoundry()
+bool Marco::TomlDate::IsWithinBoundry()
 {
 	if (this->month > 12 || this->month < 1)
 	{
@@ -210,11 +210,11 @@ bool Marco::TomlDate::IsWIthinBoundry()
 	{
 		return false;
 	}
-	else if (! this->offsetTimeStart.IsWIthinBoundry())
+	else if (! this->offsetTimeStart.IsWithinBoundry())
 	{
 		return false;
 	}
-	else if (! this->offsetTimeEnd.IsWIthinBoundry())
+	else if (! this->offsetTimeEnd.IsWithinBoundry())
 	{
 		return false;
 	}
