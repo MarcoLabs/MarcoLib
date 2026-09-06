@@ -25,6 +25,13 @@ TEST(TomlValueConstruction, BoolConstructorIsBool)
 	EXPECT_TRUE(value.IsBool());
 }
 
+TEST(TomlValueConstruction, IntConstructorIsNumber)
+{
+	Marco::TomlValue value(42);
+
+	EXPECT_TRUE(value.IsNumber());
+}
+
 TEST(TomlValueConstruction, LongConstructorIsNumber)
 {
 	Marco::TomlValue value(42L);
