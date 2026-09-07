@@ -11,13 +11,13 @@ namespace Marco
 	public:
 		TomlTime(unsigned int hour = 0, unsigned int minute = 0, unsigned int second = 0, unsigned int millisecond = 0);
 
-		
+
 		TomlError FromString(const std::string& dateString);
 
 		std::string AsString();
-		
-		bool IsWIthinBoundry();
-		
+
+		bool IsWithinBoundry();
+
 		unsigned int hour;
 		unsigned int minute;
 		unsigned int second;

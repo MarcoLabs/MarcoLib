@@ -16,7 +16,7 @@ namespace Marco
 
 		std::string AsString();
 		
-		bool IsWIthinBoundry();
+		bool IsWithinBoundry();
 
 		unsigned int year;
 		unsigned int month;
