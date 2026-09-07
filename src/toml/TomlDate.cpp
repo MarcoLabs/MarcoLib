@@ -193,7 +193,7 @@ std::string Marco::TomlDate::AsString()
 
 	dateString += timeStartString;
 
-	dateString.push_back(':');
+	dateString.push_back('-');
 
 	dateString += timeEndString;
 	
