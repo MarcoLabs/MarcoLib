@@ -3,6 +3,5 @@ Marco is a library made for cpp that includes many things the standard library i
 
 
 ## TODO
-- TomlReader
-- TomlWriter
 - camko (cpp build manager)
+- TomlWriter
