@@ -7,7 +7,7 @@ std::string Marco::JsonError::ToString() const
 
     switch (this->errorType)
     {
-        case Marco::JsonErrorType::InvalidFormat:
+        case JsonErrorType::InvalidFormat:
             errorType = "InvalidFormat";
             break;
         case Marco::JsonErrorType::WrongType:
