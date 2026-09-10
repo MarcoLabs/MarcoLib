@@ -1,3 +1,4 @@
+#include "marco/json/JsonError.h"
 #include "marco/toml/Toml.h"
 #include "marco/toml/TomlReader.h"
 
@@ -6,6 +7,11 @@
 
 int main()
 {
+    size_t index { 21 };
+    Marco::JsonError error{Marco::JsonErrorType::NumberOutOfRange, index};
+
+    std::cout << error.ToString() << '\n';
+
 	std::string tomlString = R"(
 		title = "TOML Example Configuration"
 

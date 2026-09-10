@@ -16,7 +16,6 @@ namespace Marco
 
 	using JsonArray  = std::vector<JsonValue>;
 
-	// TODO: Add preserving insertion order for a map
 	class JsonValue
 	{
 	public:
@@ -45,12 +44,12 @@ namespace Marco
 		std::expected<std::reference_wrapper<const JsonArray>,   JsonError> AsArray()  const;
 
 		JsonValue& PushBack(JsonValue value);
-		
+
 		JsonValue&                                                        operator[](const std::string& key);
 		std::expected<std::reference_wrapper<const JsonValue>, JsonError> operator[](const std::string& key) const;
 		JsonValue&                                                        operator[](size_t index);
 		std::expected<std::reference_wrapper<const JsonValue>, JsonError> operator[](size_t index) const;
-		
+
 		using ValueType = std::variant
 		<
 			std::nullptr_t,
