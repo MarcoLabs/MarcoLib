@@ -7,11 +7,6 @@
 
 int main()
 {
-    size_t index { 21 };
-    Marco::JsonError error{Marco::JsonErrorType::NumberOutOfRange, index};
-
-    std::cout << error.ToString() << '\n';
-
 	std::string tomlString = R"(
 		title = "TOML Example Configuration"
 

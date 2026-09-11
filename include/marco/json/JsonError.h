@@ -17,7 +17,7 @@ namespace Marco
 
 	struct JsonError
 	{
-	    std::string ToString() const;
+		std::string ToString() const;
 
 		JsonErrorType errorType;
 		std::size_t   index;
