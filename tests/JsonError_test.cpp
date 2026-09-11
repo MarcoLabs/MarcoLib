@@ -54,5 +54,5 @@ TEST(JsonErrorToString, IsValidErrorMessageOnDefaultConstructor)
 	Marco::JsonError error{};
 	std::string result = error.ToString();
 
-	EXPECT_EQ(result, "Error occured: NoError at index: 0:w");
+	EXPECT_EQ(result, "Error occured: InvalidFormat at index: 0");
 }

@@ -7,6 +7,10 @@
 
 int main()
 {
+    Marco::JsonError error{};
+
+    std::cout << error.ToString() << '\n';
+
 	std::string tomlString = R"(
 		title = "TOML Example Configuration"
 
