@@ -179,6 +179,7 @@ Marco::TomlError Marco::TomlReader::HandleTables(Marco::TomlValue& rootTomlValue
 	}
 
 	currTomlValue = &(*currTomlValue)[key];
+	*currTomlValue = TomlObject{};
 
 	for (; index < tomlString.length(); index++)
 	{
