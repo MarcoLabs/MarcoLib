@@ -1,3 +1,4 @@
+#include "marco/json/JsonError.h"
 #include "marco/toml/Toml.h"
 #include "marco/toml/TomlReader.h"
 
@@ -6,6 +7,10 @@
 
 int main()
 {
+    Marco::JsonError error{};
+
+    std::cout << error.ToString() << '\n';
+
 	std::string tomlString = R"(
 		title = "TOML Example Configuration"
 
