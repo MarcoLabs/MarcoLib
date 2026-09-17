@@ -41,6 +41,34 @@ std::string Marco::ReadFile(std::istream& file)
 	return ss.str();
 }
 
+std::string Marco::ReadFile(const std::filesystem::path& filepath)
+{
+	std::ifstream file(filepath, std::ios::binary);
+
+	if (!file.is_open())
+	{
+		throw std::runtime_error("ReadFile: failed to open file: " + filepath.string());
+	}
+
+	std::error_code ec;
+	auto size = std::filesystem::file_size(filepath, ec);
+
+	if (ec)
+	{
+		throw std::runtime_error("ReadFile: failed to get size of file: " + filepath.string() + " (" + ec.message() + ")");
+	}
+
+	std::string content(size, '\0');
+	file.read(content.data(), static_cast<std::streamsize>(size));
+
+	if (!file && !file.eof())
+	{
+		throw std::runtime_error("ReadFile: failed while reading file: " + filepath.string());
+	}
+
+	return content;
+}
+
 void Marco::WriteFile(const std::string& filePath, const std::string& content)
 {
 	std::ofstream file(filePath);
