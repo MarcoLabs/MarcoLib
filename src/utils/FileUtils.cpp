@@ -43,9 +43,18 @@ std::string Marco::ReadFile(std::istream& file)
 
 void Marco::WriteFile(const std::string& filePath, const std::string& content)
 {
-	std::ofstream jsonFile(filePath);
+	std::ofstream file(filePath);
 
-	jsonFile << content;
-	
-	jsonFile.close();
+	file << content;
+
+	file.close();
+}
+
+void WriteFile(const std::filesystem::path& filePath, const std::string& content)
+{
+	std::ofstream file(filePath);
+
+	file << content;
+
+	file.close();
 }
