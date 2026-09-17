@@ -50,7 +50,7 @@ void Marco::WriteFile(const std::string& filePath, const std::string& content)
 	file.close();
 }
 
-void WriteFile(const std::filesystem::path& filePath, const std::string& content)
+void Marco::WriteFile(const std::filesystem::path& filePath, const std::string& content)
 {
 	std::ofstream file(filePath);
 
