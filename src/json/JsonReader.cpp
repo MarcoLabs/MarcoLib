@@ -15,12 +15,12 @@ Marco::Json Marco::JsonReader::Parse(const std::string& jsonString)
 	size_t end   = jsonString.find_last_not_of(" \t\r\n");
 
 	JsonValue json{JsonObject{}};
-	
+
 	if (start == std::string::npos || jsonString[start] != '{' || jsonString[end] != '}')
 	{
 		this->m_error = JsonError{JsonErrorType::InvalidFormat, 0};
 		this->m_valid = false;
-		
+
 		return Json{};
 	}
 
@@ -152,7 +152,7 @@ Marco::JsonError Marco::JsonReader::FormJsonValue(Marco::JsonValue& jsonValue, c
 	}
 
 	JsonError error = JsonError{JsonErrorType::InvalidFormat, index};
-	
+
 	if ((jsonString[index] >= '0' && jsonString[index] <= '9') || jsonString[index] == '-') // Possibly number
 	{
 		error = HandleNumber(jsonValue, jsonString, index);
@@ -174,13 +174,13 @@ Marco::JsonError Marco::JsonReader::FormJsonValue(Marco::JsonValue& jsonValue, c
 	else if (jsonString[index] == '[') // Possibly array
 	{
 		index++;
-		
+
 		error = HandleArray(jsonValue, jsonString, index);
 	}
 	else if (jsonString[index] == '{') // Possibly object
 	{
 		index++;
-		
+
 		error = FormJsonFromString(jsonValue, jsonString, index);
 	}
 	else
@@ -194,13 +194,13 @@ Marco::JsonError Marco::JsonReader::FormJsonValue(Marco::JsonValue& jsonValue, c
 Marco::JsonError Marco::JsonReader::HandleNumber(Marco::JsonValue& jsonValue, const std::string& jsonString, size_t& index)
 {
 	std::string value{};
-	
+
 	for (; index < jsonString.length(); index++)
 	{
 		if (std::isspace(jsonString[index]) || jsonString[index] == ',' || jsonString[index] == '}' || jsonString[index] == ']')
 		{
 			try
-			{	
+			{
 				jsonValue = std::stod(value);
 			}
 			catch (const std::invalid_argument&)
@@ -211,10 +211,10 @@ Marco::JsonError Marco::JsonReader::HandleNumber(Marco::JsonValue& jsonValue, co
 			{
 				return Marco::JsonError{JsonErrorType::NumberOutOfRange, index};
 			}
-			
+
 			return Marco::JsonError{JsonErrorType::NoError, index};
 		}
-		
+
 		value.push_back(jsonString[index]);
 	}
 
@@ -242,13 +242,13 @@ Marco::JsonError Marco::JsonReader::HandleString(Marco::JsonValue& jsonValue, co
 
 			continue;
 		}
-		
+
 		if (jsonString[index] == '\"')
 		{
 			jsonValue = value;
 
 			index++;
-			
+
 			return Marco::JsonError{JsonErrorType::NoError, index};
 		}
 
@@ -261,7 +261,7 @@ Marco::JsonError Marco::JsonReader::HandleString(Marco::JsonValue& jsonValue, co
 Marco::JsonError Marco::JsonReader::HandleBool(Marco::JsonValue& jsonValue, const std::string& jsonString, size_t& index)
 {
 	std::string value{};
-	
+
 	for (; index < jsonString.length(); index++)
 	{
 		if (std::isspace(jsonString[index]) || jsonString[index] == ',' || jsonString[index] == '}' || jsonString[index] == ']')
@@ -269,7 +269,7 @@ Marco::JsonError Marco::JsonReader::HandleBool(Marco::JsonValue& jsonValue, cons
 			if (value == "true")
 			{
 				jsonValue = true;
-				
+
 				return Marco::JsonError{JsonErrorType::NoError, index};
 			}
 			else if (value == "false")
@@ -293,7 +293,7 @@ Marco::JsonError Marco::JsonReader::HandleBool(Marco::JsonValue& jsonValue, cons
 Marco::JsonError Marco::JsonReader::HandleNull(Marco::JsonValue& jsonValue, const std::string& jsonString, size_t& index)
 {
 	std::string value{};
-	
+
 	for (; index < jsonString.length(); index++)
 	{
 		if (std::isspace(jsonString[index]) || jsonString[index] == ',' || jsonString[index] == '}' || jsonString[index] == ']')
@@ -393,9 +393,47 @@ Marco::JsonError Marco::JsonReader::HandleEscape(std::string& value,   const std
 		case 'n': value.push_back ('\n'); break;
 		case 'r': value.push_back ('\r'); break;
 		case 't': value.push_back ('\t'); break;
+		case 'u': // Handle unicode escapes
+		{
+			if (index + 4 >= jsonString.length()) // Make sure 4 chars exist after 'u'
+			{
+				return JsonError{JsonErrorType::InvalidFormat, index};
+				break;
+			}
+
+			for(size_t i = index + 1; i<= index + 4; i++) // Validate chars are hex digits
+			{
+				if(!std::isxdigit(jsonString[i]))
+				{
+					return JsonError{JsonErrorType::InvalidFormat, index};
+					break;
+				}
+			}
+
+			unsigned int unicodeValue = std::stoi(jsonString.substr(index + 1, 4), nullptr, 16); // Extract 4 chars after 'u'
+			index += 4;
+			value.push_back(static_cast<char>(unicodeValue));
+			break;
+		}
 		default:
 			return JsonError{JsonErrorType::InvalidFormat, index};
 	}
 
 	return JsonError{JsonErrorType::NoError, index};
+}
+
+bool Marco::JsonReader::IsValueDelimiter(char c)
+{
+	return std::isspace(c)|| c == ',' || c == '}' || c == ']';
+}
+
+void Marco::JsonReader::MoveIndexUntilNotSpace(const std::string& jsonString, size_t& index)
+{
+	for (; index < jsonString.length(); index ++)
+	{
+		if (! std::isspace(jsonString[index]))
+		{
+			break;
+		}
+	}
 }

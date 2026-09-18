@@ -11,23 +11,26 @@ namespace Marco
 	{
 	public:
 		JsonReader();
-		
+
 		Json Parse(const std::string&  jsonString);
 		Json Parse(std::istream& jsonFile);
 
 		JsonError Error();
 		bool      IsValid();
-		
+
 	private:
-		static JsonError FormJsonFromString(JsonValue& jsonValue, const std::string& jsonString, size_t& index); 
-		static JsonError FormJsonValue     (JsonValue& jsonValue, const std::string& jsonString, size_t& index); 
+		static JsonError FormJsonFromString(JsonValue& jsonValue, const std::string& jsonString, size_t& index);
+		static JsonError FormJsonValue     (JsonValue& jsonValue, const std::string& jsonString, size_t& index);
 		static JsonError HandleNumber      (JsonValue& jsonValue, const std::string& jsonString, size_t& index); // index is left pointing at the character after last processed
 		static JsonError HandleString      (JsonValue& jsonValue, const std::string& jsonString, size_t& index); // index is left pointing at the character after last processed
 		static JsonError HandleBool        (JsonValue& jsonValue, const std::string& jsonString, size_t& index); // index is left pointing at the character after last processed
 		static JsonError HandleNull        (JsonValue& jsonValue, const std::string& jsonString, size_t& index); // index is left pointing at the character after last processed
 		static JsonError HandleArray       (JsonValue& jsonValue, const std::string& jsonString, size_t& index); // index is left pointing at the character after last processed
 		static JsonError HandleEscape      (std::string& value,   const std::string& jsonString, size_t& index); // index is left pointing at the last processed character
-		
+
+		static void MoveIndexUntilNotSpace(const std::string& tomlString, size_t& index);
+		static bool IsValueDelimiter      (char c);
+
 		JsonError m_error;
 		bool      m_valid;
 	};
