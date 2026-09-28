@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include "marco/json/Json.h"
 #include "marco/json/JsonError.h"
@@ -30,6 +31,9 @@ namespace Marco
 
 		static void MoveIndexUntilNotSpace(const std::string& tomlString, size_t& index);
 		static bool IsValueDelimiter      (char c);
+		static bool IsHex                 (char c);
+		static uint16_t ParseHex(const std::string& jsonString, size_t index);
+		static void AppendUtf8(std::string& value, uint32_t cp);
 
 		JsonError m_error;
 		bool      m_valid;
