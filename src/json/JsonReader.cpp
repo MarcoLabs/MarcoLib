@@ -375,42 +375,6 @@ Marco::JsonError Marco::JsonReader::HandleArray(Marco::JsonValue& jsonValue, con
 	return error;
 }
 
-bool Marco::JsonReader::IsHex(char c)
-{
-	return std::isxdigit(static_cast<unsigned char>(c));
-}
-
-bool Marco::JsonReader::IsValueDelimiter(char c)
-{
-	return std::isspace(c)|| c == ',' || c == '}' || c == ']';
-}
-
-void Marco::JsonReader::AppendUtf8(std::string& value, uint32_t codePoint)
-{
-	if (codePoint <= 0x7F)
-	{
-		value.push_back(static_cast<char>(codePoint));
-	}
-	else if (codePoint <= 0x7FF)
-	{
-		value.push_back(static_cast<char>(0xC0 | (codePoint >> 6)));
-		value.push_back(static_cast<char>(0x80 | (codePoint & 0x3F)));
-	}
-	else if (codePoint <= 0xFFFF)
-	{
-		value.push_back(static_cast<char>(0xE0 | (codePoint >> 12)));
-		value.push_back(static_cast<char>(0x80 | ((codePoint >> 6) & 0x3F)));
-		value.push_back(static_cast<char>(0x80 | (codePoint & 0x3F)));
-	}
-	else
-	{
-		value.push_back(static_cast<char>(0xF0 | (codePoint >> 18)));
-		value.push_back(static_cast<char>(0x80 | ((codePoint >> 12) & 0x3F)));
-		value.push_back(static_cast<char>(0x80 | ((codePoint >> 6) & 0x3F)));
-		value.push_back(static_cast<char>(0x80 | (codePoint & 0x3F)));
-	}
-}
-
 Marco::JsonError Marco::JsonReader::HandleEscape(std::string& value, const std::string& jsonString, size_t& index)
 {
 	index++;
@@ -445,19 +409,19 @@ Marco::JsonError Marco::JsonReader::HandleEscape(std::string& value, const std::
 				}
 			}
 
-			uint16_t first = ParseHex(jsonString, index + 1);
-			index += 4;
+			index++;
+			uint16_t first = ParseHex(jsonString, index);
 
 			if (first >= 0xD800 && first <= 0xDBFF) // High surrogates
 			{
-				if (index + 6 >= jsonString.length() ||
-					jsonString[index + 1] != '\\'    ||
-					jsonString[index + 2] != 'u')
+				if (index + 5 >= jsonString.length() ||
+					jsonString[index] != '\\'    ||
+					jsonString[index + 1] != 'u')
 				{
 					return JsonError{JsonErrorType::InvalidFormat, index};
 				}
 
-				for (size_t i = index + 3; i <= index + 6; ++i)
+				for (size_t i = index + 2; i <= index + 5; ++i)
 				{
 					if (! IsHex(jsonString[i]))
 					{
@@ -465,7 +429,8 @@ Marco::JsonError Marco::JsonReader::HandleEscape(std::string& value, const std::
 					}
 				}
 
-				uint16_t second = ParseHex(jsonString, index + 3);
+				index += 2;
+				uint16_t second = ParseHex(jsonString, index);
 
 				if(second < 0xDC00 || second > 0xDFFF)
 				{
@@ -476,7 +441,6 @@ Marco::JsonError Marco::JsonReader::HandleEscape(std::string& value, const std::
 					+ (static_cast<uint32_t>(first - 0xD800) << 10)
 					+ (static_cast<uint32_t>(second) - 0xDC00);
 
-				index += 6;
 				AppendUtf8(value, codePoint);
 			}
 			else if (first >= 0xDC00 && first <= 0xDFFF) // Low surrogates
@@ -487,6 +451,7 @@ Marco::JsonError Marco::JsonReader::HandleEscape(std::string& value, const std::
 			{
 				AppendUtf8(value, first);
 			}
+			index--;
 
 			break;
 		}
@@ -497,13 +462,23 @@ Marco::JsonError Marco::JsonReader::HandleEscape(std::string& value, const std::
 	return JsonError{JsonErrorType::NoError, index};
 }
 
-uint16_t Marco::JsonReader::ParseHex(const std::string& jsonString, size_t index)
+bool Marco::JsonReader::IsHex(char c)
+{
+	return std::isxdigit(static_cast<unsigned char>(c));
+}
+
+bool Marco::JsonReader::IsValueDelimiter(char c)
+{
+	return std::isspace(c)|| c == ',' || c == '}' || c == ']';
+}
+
+uint16_t Marco::JsonReader::ParseHex(const std::string& jsonString, size_t& index)
 {
 	uint16_t value = 0;
 
 	for (size_t i = 0; i < 4; ++i)
 	{
-		char c = jsonString[index + i];
+		char c = jsonString[index];
 
 		value <<= 4;
 
@@ -515,13 +490,41 @@ uint16_t Marco::JsonReader::ParseHex(const std::string& jsonString, size_t index
 		{
 			value |= c - 'a' + 10;
 		}
-		else
+		else if (c >= 'A' && c <= 'F')
 		{
 			value |= c - 'A' + 10;
 		}
+
+		index++;
 	}
 
 	return value;
+}
+
+void Marco::JsonReader::AppendUtf8(std::string& value, uint32_t codePoint)
+{
+	if (codePoint <= 0x7F)
+	{
+		value.push_back(static_cast<char>(codePoint));
+	}
+	else if (codePoint <= 0x7FF)
+	{
+		value.push_back(static_cast<char>(0xC0 | (codePoint >> 6)));
+		value.push_back(static_cast<char>(0x80 | (codePoint & 0x3F)));
+	}
+	else if (codePoint <= 0xFFFF)
+	{
+		value.push_back(static_cast<char>(0xE0 | (codePoint >> 12)));
+		value.push_back(static_cast<char>(0x80 | ((codePoint >> 6) & 0x3F)));
+		value.push_back(static_cast<char>(0x80 | (codePoint & 0x3F)));
+	}
+	else
+	{
+		value.push_back(static_cast<char>(0xF0 | (codePoint >> 18)));
+		value.push_back(static_cast<char>(0x80 | ((codePoint >> 12) & 0x3F)));
+		value.push_back(static_cast<char>(0x80 | ((codePoint >> 6) & 0x3F)));
+		value.push_back(static_cast<char>(0x80 | (codePoint & 0x3F)));
+	}
 }
 
 void Marco::JsonReader::MoveIndexUntilNotSpace(const std::string& jsonString, size_t& index)

@@ -29,11 +29,11 @@ namespace Marco
 		static JsonError HandleArray       (JsonValue& jsonValue, const std::string& jsonString, size_t& index); // index is left pointing at the character after last processed
 		static JsonError HandleEscape      (std::string& value,   const std::string& jsonString, size_t& index); // index is left pointing at the last processed character
 
-		static bool IsHex                 (char c);
-		static bool IsValueDelimiter      (char c);
+		static bool IsHex           (char c);
+		static bool IsValueDelimiter(char c);
 
-		static void AppendUtf8            (std::string& value, uint32_t cp);
-		static uint16_t ParseHex          (const std::string& jsonString, size_t index);
+		static uint16_t ParseHex  (const std::string& jsonString, size_t& index);
+		static void     AppendUtf8(std::string& value, uint32_t cp);
 
 		static void MoveIndexUntilNotSpace(const std::string& tomlString, size_t& index);
 
