@@ -503,21 +503,25 @@ uint16_t Marco::JsonReader::ParseHex(const std::string& jsonString, size_t& inde
 
 void Marco::JsonReader::AppendUtf8(std::string& value, uint32_t codePoint)
 {
+	// ASCII U+0000 to U+007F single byte format (0xxxxxxx)
 	if (codePoint <= 0x7F)
 	{
 		value.push_back(static_cast<char>(codePoint));
 	}
+	// 2 byte U+0080 to U+07FF (110xxxxx 10xxxxxx)
 	else if (codePoint <= 0x7FF)
 	{
 		value.push_back(static_cast<char>(0xC0 | (codePoint >> 6)));
 		value.push_back(static_cast<char>(0x80 | (codePoint & 0x3F)));
 	}
+	// 3 byte U+0800 to U+FFFF (1110xxxx 10xxxxxx 10xxxxxx)
 	else if (codePoint <= 0xFFFF)
 	{
 		value.push_back(static_cast<char>(0xE0 | (codePoint >> 12)));
 		value.push_back(static_cast<char>(0x80 | ((codePoint >> 6) & 0x3F)));
 		value.push_back(static_cast<char>(0x80 | (codePoint & 0x3F)));
 	}
+	// 4 byte U+10000 to U+10FFFF (11110xxx 10xxxxxx 10xxxxxx 10xxxxxx)
 	else
 	{
 		value.push_back(static_cast<char>(0xF0 | (codePoint >> 18)));
