@@ -258,7 +258,7 @@ TEST(JsonReaderTest, ParsesNestedObject)
 	else
 	{
 		FAIL() << "AsNumber failed with error code: " << (int)n.error().errorType;
-	}	
+	}
 }
 
 TEST(JsonReaderTest, ParsesEmptyArray)
@@ -528,7 +528,7 @@ TEST(JsonReaderTest, FailsGracefullyOnUnclosedDeeplyNestedStructure)
 TEST(JsonReaderTest, ParsesStringWithEscapedQuote)
 {
 	Marco::JsonReader reader;
-	Marco::JsonValue  value = reader.Parse(R"({"key":"say \"hi\""})"); 
+	Marco::JsonValue  value = reader.Parse(R"({"key":"say \"hi\""})");
 
 	ASSERT_TRUE(reader.IsValid());
 	EXPECT_EQ(value["key"].AsString().value().get(), R"(say "hi")");
@@ -556,7 +556,7 @@ TEST(JsonReaderTest, ParsesStringWithEscapedNewline)
 {
 	Marco::JsonReader reader;
 	Marco::JsonValue  value = reader.Parse(R"({"key":"line1\nline2"})");
-	
+
 	ASSERT_TRUE(reader.IsValid());
 	EXPECT_EQ(value["key"].AsString().value().get(), "line1\nline2");
 }
@@ -565,7 +565,7 @@ TEST(JsonReaderTest, ParsesStringWithEscapedTab)
 {
 	Marco::JsonReader reader;
 	Marco::JsonValue  value = reader.Parse(R"({"key":"a\tb"})");
-	
+
 	ASSERT_TRUE(reader.IsValid());
 	EXPECT_EQ(value["key"].AsString().value().get(), "a\tb");
 }
@@ -574,7 +574,7 @@ TEST(JsonReaderTest, ParsesStringWithEscapedCarriageReturn)
 {
 	Marco::JsonReader reader;
 	Marco::JsonValue  value = reader.Parse(R"({"key":"a\rb"})");
-	
+
 	ASSERT_TRUE(reader.IsValid());
 	EXPECT_EQ(value["key"].AsString().value().get(), "a\rb");
 }
@@ -583,7 +583,7 @@ TEST(JsonReaderTest, ParsesStringWithEscapedBackspace)
 {
 	Marco::JsonReader reader;
 	Marco::JsonValue  value = reader.Parse(R"({"key":"a\bb"})");
-	
+
 	ASSERT_TRUE(reader.IsValid());
 	EXPECT_EQ(value["key"].AsString().value().get(), "a\bb");
 }
@@ -592,7 +592,7 @@ TEST(JsonReaderTest, ParsesStringWithEscapedFormFeed)
 {
 	Marco::JsonReader reader;
 	Marco::JsonValue  value = reader.Parse(R"({"key":"a\fb"})");
-	
+
 	ASSERT_TRUE(reader.IsValid());
 	EXPECT_EQ(value["key"].AsString().value().get(), "a\fb");
 }
@@ -601,7 +601,31 @@ TEST(JsonReaderTest, ParsesStringWithMultipleConsecutiveEscapes)
 {
 	Marco::JsonReader reader;
 	Marco::JsonValue  value = reader.Parse(R"({"key":"\n\t\\\""})");
-	
+
 	ASSERT_TRUE(reader.IsValid());
 	EXPECT_EQ(value["key"].AsString().value().get(), "\n\t\\\"");
+}
+
+TEST(JsonReaderTest, ParsesUnicodeBasic)
+{
+	Marco::JsonReader reader;
+
+	// ASCII chars
+	Marco::JsonValue valueOne = reader.Parse(R"({"key": "\u0041"})");
+	ASSERT_TRUE(reader.IsValid());
+	EXPECT_EQ(valueOne["key"].AsString().value().get(), "A");
+
+	// ASCII currency symbol
+	Marco::JsonValue valueTwo = reader.Parse(R"({"key": "\u20ac"})");
+	ASSERT_TRUE(reader.IsValid());
+	EXPECT_EQ(valueTwo["key"].AsString().value().get(), "€");
+}
+
+TEST(JsonReaderTest, ParsesUnicodeSurrogatePair)
+{
+	Marco::JsonReader reader;
+
+	Marco::JsonValue value = reader.Parse(R"({"key": "\uD83D\uDE00"})");
+	ASSERT_TRUE(reader.IsValid());
+	EXPECT_EQ(value["key"].AsString().value().get(), "😀");
 }

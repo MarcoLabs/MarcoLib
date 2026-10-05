@@ -63,14 +63,14 @@ Marco::TomlError Marco::TomlReader::FormTomlFromString(Marco::TomlValue& rootTom
 	while (index < tomlString.length() && error.errorType == TomlErrorType::NoError)
 	{
 		MoveIndexUntilNotSpace(tomlString, index);
-	
+
 		if (index >= tomlString.length())
 		{
 			return TomlError{TomlErrorType::NoError, 0};
 		}
 
 		char c = tomlString[index];
-	
+
 		switch (c)
 		{
 			case '}':
@@ -106,7 +106,7 @@ Marco::TomlError Marco::TomlReader::FormTomlFromString(Marco::TomlValue& rootTom
 Marco::TomlError Marco::TomlReader::HandleTables(Marco::TomlValue& rootTomlValue, Marco::TomlValue*& currTomlValue, const std::string& tomlString, size_t& index)
 {
 	index++;
-	
+
 	currTomlValue = &rootTomlValue;
 	std::string key{};
 	bool prevWasDot = true;
@@ -128,11 +128,11 @@ Marco::TomlError Marco::TomlReader::HandleTables(Marco::TomlValue& rootTomlValue
 		{
 			return TomlError{TomlErrorType::InvalidFormat, index};
 		}
-		
+
 		if (c == ']')
 		{
 			index++;
-			
+
 			break;
 		}
 
@@ -140,19 +140,19 @@ Marco::TomlError Marco::TomlReader::HandleTables(Marco::TomlValue& rootTomlValue
 		{
 			return TomlError{TomlErrorType::InvalidFormat, index};
 		}
-		
+
 		if (c == '.')
 		{
 			if (prevWasDot)
 			{
 				return TomlError{TomlErrorType::InvalidFormat, index};
 			}
-			
+
 			currTomlValue = &(*currTomlValue)[key];
 			*currTomlValue = TomlObject{};
 			
 			key = "";
-			
+
 
 			if (index + 1 >= tomlString.length() || tomlString[index + 1] == ']')
 			{
@@ -160,7 +160,7 @@ Marco::TomlError Marco::TomlReader::HandleTables(Marco::TomlValue& rootTomlValue
 			}
 
 			prevWasDot = true;
-			
+
 			continue;
 		}
 
@@ -174,7 +174,7 @@ Marco::TomlError Marco::TomlReader::HandleTables(Marco::TomlValue& rootTomlValue
 	}
 
 	auto currAsObject = currTomlValue->AsObject();
-	
+
 	if (currAsObject.has_value() && currAsObject.value().get().contains(key))
 	{
 		return TomlError{TomlErrorType::InvalidFormat, index};
@@ -209,12 +209,12 @@ Marco::TomlError Marco::TomlReader::HandleInlineTables(Marco::TomlValue* currTom
 		ExpectKey, // reached after a comma - {,} or trailing comma is invalid here
 		ExpectCommaOrEnd
 	};
-	
+
 	index++;
 	MoveIndexUntilNotSpace(tomlString, index);
-	
+
 	State state = State::ExpectKeyOrEnd;
-	
+
 	while (index < tomlString.length())
 	{
 		switch (state)
@@ -227,50 +227,50 @@ Marco::TomlError Marco::TomlReader::HandleInlineTables(Marco::TomlValue* currTom
 					if (state == State::ExpectKeyOrEnd)
 					{
 						index++;
-						
+
 						return TomlError{TomlErrorType::NoError, index};
 					}
 					return TomlError{TomlErrorType::InvalidFormat, index};
 				}
-				
+
 				char c = tomlString[index];
 				TomlError error{};
-				
+
 				switch (c)
 				{
 					case '\"': error = FormKeyValuePair(HandleStringKey,        currTomlValue, tomlString, index); break;
 					case '\'': error = FormKeyValuePair(HandleStringLiteralKey, currTomlValue, tomlString, index); break;
 					default:   error = FormKeyValuePair(HandleBareKey,          currTomlValue, tomlString, index); break;
 				}
-				
+
 				if (error.errorType != TomlErrorType::NoError)
 				{
 					return error;
 				}
-				
+
 				MoveIndexUntilNotSpace(tomlString, index);
 				state = State::ExpectCommaOrEnd;
 				break;
 			}
-			
+
 			case State::ExpectCommaOrEnd:
 			{
 				if (index >= tomlString.length())
 				{
 					return TomlError{TomlErrorType::InvalidFormat, index};
 				}
-				
+
 				if (tomlString[index] == '}')
 				{
 					index++;
 					return TomlError{TomlErrorType::NoError, index};
 				}
-				
+
 				if (tomlString[index] == ',')
 				{
 					index++;
 					MoveIndexUntilNotSpace(tomlString, index);
-					
+
 					state = State::ExpectKey;
 				}
 				else
@@ -281,7 +281,7 @@ Marco::TomlError Marco::TomlReader::HandleInlineTables(Marco::TomlValue* currTom
 			}
 		}
 	}
-	
+
 	return TomlError{TomlErrorType::InvalidFormat, index};
 }
 
@@ -300,7 +300,7 @@ Marco::TomlError Marco::TomlReader::HandleDate(Marco::TomlValue* currTomlValue, 
 	}
 
 	*currTomlValue = TomlDate{};
-	
+
 	TomlError error = currTomlValue->AsDate().value().FromString(value);
 
 	return error;
@@ -321,7 +321,7 @@ Marco::TomlError Marco::TomlReader::HandleTime(Marco::TomlValue* currTomlValue, 
 	}
 
 	*currTomlValue = TomlTime{};
-	
+
 	TomlError error = currTomlValue->AsTime().value().FromString(value);
 
 	return error;
@@ -343,11 +343,11 @@ Marco::TomlError Marco::TomlReader::HandleArrayOfTables(Marco::TomlValue& rootTo
 		{
 			return TomlError{TomlErrorType::InvalidFormat, index};
 		}
-		
+
 		if (c == ']')
 		{
 			index++;
-			
+
 			break;
 		}
 
@@ -355,14 +355,14 @@ Marco::TomlError Marco::TomlReader::HandleArrayOfTables(Marco::TomlValue& rootTo
 		{
 			return TomlError{TomlErrorType::InvalidFormat, index};
 		}
-		
+
 		if (c == '.')
 		{
 			if (prevWasDot)
 			{
 				return TomlError{TomlErrorType::InvalidFormat, index};
 			}
-			
+
 			currTomlValue = &(*currTomlValue)[key];
 			key = "";
 
@@ -412,7 +412,7 @@ Marco::TomlError Marco::TomlReader::HandleArrayOfTables(Marco::TomlValue& rootTo
 	}
 
 	currTomlValue = &currTomlValue->PushBack(nullptr);
-	
+
 	return TomlError{TomlErrorType::NoError, index};
 }
 
@@ -420,19 +420,19 @@ Marco::TomlError Marco::TomlReader::FormTomlValue(Marco::TomlValue* currTomlValu
 {
 	TomlError error{};
 	char c = tomlString[index];
-	
+
 	if (c == '\'')
 	{
 		index++;
-		
+
 		bool isMultiline = false;
 		if (index + 1 < tomlString.length() && tomlString[index] == '\'' && tomlString[index + 1] == '\'')
 		{
 			index += 2;
-			
+
 			isMultiline = true;
 		}
-		
+
 		error = HandleStringLiteral(currTomlValue, tomlString, index, isMultiline);
 	}
 	else if (c == '\"')
@@ -443,10 +443,10 @@ Marco::TomlError Marco::TomlReader::FormTomlValue(Marco::TomlValue* currTomlValu
 		if (index + 2 < tomlString.length() && tomlString[index] == '\"' && tomlString[index + 1] == '\"')
 		{
 			index += 2;
-			
+
 			isMultiline = true;
 		}
-		
+
 		error = HandleString(currTomlValue, tomlString, index, isMultiline);
 	}
 	else if ((c >= '0' && c <= '9') || c == '-' || c == '+')
@@ -505,7 +505,7 @@ Marco::TomlError Marco::TomlReader::HandleNumber(Marco::TomlValue* currTomlValue
 		value.push_back(tomlString[index]);
 		index++;
 	}
-	
+
 	for (; index < tomlString.length(); index++)
 	{
 		char c = tomlString[index];
@@ -561,7 +561,7 @@ Marco::TomlError Marco::TomlReader::HandleNumber(Marco::TomlValue* currTomlValue
 	}
 
 	double parsedValue{};
-	
+
 	if (isFloat)
 	{
 		auto result = ParseTomlFloat(value);
@@ -586,14 +586,14 @@ Marco::TomlError Marco::TomlReader::HandleNumber(Marco::TomlValue* currTomlValue
 	}
 
 	*currTomlValue = parsedValue;
-	
+
 	return TomlError{TomlErrorType::NoError, index};
 }
 
 Marco::TomlError Marco::TomlReader::HandleString(Marco::TomlValue* currTomlValue, const std::string& tomlString, size_t& index, bool isMultiline)
 {
 	std::string value{};
-	
+
 	if (isMultiline)
 	{
 		for (; index < tomlString.length(); index++)
@@ -625,7 +625,7 @@ Marco::TomlError Marco::TomlReader::HandleString(Marco::TomlValue* currTomlValue
 				{
 					*currTomlValue = value;
 					index += 3;
-					
+
 					return TomlError{TomlErrorType::NoError, index};
 				}
 			}
@@ -645,7 +645,7 @@ Marco::TomlError Marco::TomlReader::HandleString(Marco::TomlValue* currTomlValue
 			{
 				return TomlError{TomlErrorType::InvalidFormat, index};
 			}
-			
+
 			if (c == '\\')
 			{
 				TomlError error = HandleEscape(value, tomlString, index);
@@ -654,7 +654,7 @@ Marco::TomlError Marco::TomlReader::HandleString(Marco::TomlValue* currTomlValue
 				{
 					return error;
 				}
-				
+
 				continue;
 			}
 
@@ -662,7 +662,7 @@ Marco::TomlError Marco::TomlReader::HandleString(Marco::TomlValue* currTomlValue
 			{
 				*currTomlValue = value;
 				index++;
-				
+
 				return TomlError{TomlErrorType::NoError, index};
 			}
 
@@ -690,7 +690,7 @@ Marco::TomlError Marco::TomlReader::HandleStringLiteral(Marco::TomlValue* currTo
 				{
 					*currTomlValue = value;
 					index += 3;
-					
+
 					return TomlError{TomlErrorType::NoError, index};
 				}
 			}
@@ -715,7 +715,7 @@ Marco::TomlError Marco::TomlReader::HandleStringLiteral(Marco::TomlValue* currTo
 			{
 				*currTomlValue = value;
 				index++;
-				
+
 				return TomlError{TomlErrorType::NoError, index};
 			}
 
@@ -790,7 +790,7 @@ Marco::TomlError Marco::TomlReader::HandleArray(Marco::TomlValue* currTomlValue,
 		{
 			return TomlError{TomlErrorType::InvalidFormat, index};
 		}
-		
+
 		TomlError error = FormTomlValue(&currTomlValue->PushBack(nullptr), tomlString, index);
 
 		if (error.errorType != TomlErrorType::NoError)
@@ -808,7 +808,7 @@ Marco::TomlError Marco::TomlReader::HandleArray(Marco::TomlValue* currTomlValue,
 		if (tomlString[index] == ',')
 		{
 			index++;
-			
+
 			isExpectingValue = true;
 		}
 		else
@@ -834,10 +834,10 @@ std::expected<std::string, Marco::TomlError> Marco::TomlReader::HandleStringKey(
 		if (c == '\"')
 		{
 			index++; // skip the "
-			
+
 			break;
 		}
-		
+
 		if (c == '\\')
 		{
 			TomlError error = HandleEscape(key, tomlString, index);
@@ -849,7 +849,7 @@ std::expected<std::string, Marco::TomlError> Marco::TomlReader::HandleStringKey(
 
 			continue;
 		}
-		
+
 		key.push_back(c);
 		index++;
 	}
@@ -862,7 +862,7 @@ std::expected<std::string, Marco::TomlError> Marco::TomlReader::HandleStringKey(
 		{
 			return std::unexpected(TomlError{TomlErrorType::InvalidFormat, index});
 		}
-		
+
 		if (! std::isspace(c) && c != '=')
 		{
 			break;
@@ -882,7 +882,7 @@ std::expected<std::string, Marco::TomlError> Marco::TomlReader::HandleStringLite
 	index++;
 
 	std::string key{};
-	
+
 	for (; index < tomlString.length(); index++)
 	{
 		char c = tomlString[index];
@@ -904,13 +904,13 @@ std::expected<std::string, Marco::TomlError> Marco::TomlReader::HandleStringLite
 		{
 			return std::unexpected(TomlError{TomlErrorType::InvalidFormat, index});
 		}
-		
+
 		if (! std::isspace(c) && c != '=')
 		{
 			break;
 		}
 	}
-	
+
 	if (index >= tomlString.length())
 	{
 		return std::unexpected(TomlError{TomlErrorType::InvalidFormat, index});
@@ -931,7 +931,7 @@ std::expected<std::string, Marco::TomlError> Marco::TomlReader::HandleBareKey(co
 		{
 			break;
 		}
-		
+
 		if (!(c >= 'a' && c <= 'z') && !(c >= 'A' && c <= 'Z') && !(c >= '0' && c <= '9') && c != '_' && c != '-')
 		{
 			return std::unexpected(TomlError{TomlErrorType::InvalidFormat, index});
@@ -948,7 +948,7 @@ std::expected<std::string, Marco::TomlError> Marco::TomlReader::HandleBareKey(co
 		{
 			return std::unexpected(TomlError{TomlErrorType::InvalidFormat, index});
 		}
-		
+
 		if (! std::isspace(c) && c != '=')
 		{
 			break;
@@ -1054,7 +1054,7 @@ std::expected<long, Marco::TomlError> Marco::TomlReader::ParseTomlInt(std::strin
 		}
 
 		prevWasDigit = true;
-		
+
 		int digit{};
 		if (c >= '0' && c <= '9')
 		{
