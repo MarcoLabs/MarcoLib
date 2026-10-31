@@ -149,7 +149,14 @@ Marco::TomlError Marco::TomlReader::HandleTables(Marco::TomlValue& rootTomlValue
 			}
 
 			currTomlValue = &(*currTomlValue)[key];
-			*currTomlValue = TomlObject{};
+			if (currTomlValue->IsEmpty())
+			{
+				*currTomlValue = TomlObject{};
+			}
+			else if (! currTomlValue->IsObject())
+			{
+				return TomlError{TomlErrorType::InvalidFormat, index};
+			}
 			
 			key = "";
 
